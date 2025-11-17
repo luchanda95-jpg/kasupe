@@ -1,38 +1,302 @@
+/* src/App.css */
+
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
   min-height: 100vh;
+  background: #f3f4f6;
+  color: #111827;
   display: flex;
   flex-direction: column;
+}
+
+.app-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  justify-content: space-between;
+  gap: 3rem;
+  padding-top: 1.5rem;
+  padding-bottom: 3rem;
 }
 
-.App-link {
-  color: #61dafb;
+.hero-left {
+  max-width: 560px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.hero-tagline {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #2563eb;
+  font-weight: 500;
+  margin-bottom: 0.6rem;
+}
+
+.hero-title {
+  font-size: 2.4rem;
+  line-height: 1.15;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+
+.hero-highlight {
+  color: #2563eb;
+}
+
+.hero-subtitle {
+  font-size: 0.98rem;
+  color: #4b5563;
+  margin-bottom: 1.5rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-bottom: 1.25rem;
+}
+
+.btn-primary {
+  padding: 0.75rem 1.7rem;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.btn-outline {
+  padding: 0.75rem 1.7rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+  font-weight: 400;
+  cursor: pointer;
+  background: transparent;
+  color: #111827;
+}
+
+.btn-outline:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Right hero card */
+
+.hero-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hero-card {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  padding: 1.5rem 1.4rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.hero-card-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.hero-card-label {
+  color: #6b7280;
+}
+
+.hero-card-value {
+  font-weight: 500;
+  color: #111827;
+}
+
+.hero-card-button {
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 0.9rem;
+  border: none;
+  cursor: pointer;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* ---------- Sections ---------- */
+
+.section {
+  padding: 2rem 0 0;
+}
+
+.section-header h2 {
+  font-size: 1.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.section-header p {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* Cars grid */
+
+.card-grid {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.2rem;
+}
+
+.car-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.2rem 1.2rem 1.1rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.car-card h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+}
+
+.car-tag {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: #2563eb;
+}
+
+.car-meta {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.car-price {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Info box */
+
+.info-box {
+  margin-top: 1.2rem;
+  padding: 1rem 1.1rem;
+  border-radius: 0.9rem;
+  border: 1px dashed #cbd5f5;
+  background: #eff6ff;
+  font-size: 0.9rem;
+  color: #1e3a8a;
+}
+
+/* Contact strip */
+
+.contact-strip {
+  margin-top: 1.5rem;
+  padding: 1.3rem 1.5rem;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.contact-strip h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1.2rem;
+}
+
+.contact-strip p {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.contact-strip .btn-primary {
+  background: #ffffff;
+  color: #2563eb;
+}
+
+.contact-strip .btn-primary:hover {
+  background: #e5e7eb;
+}
+
+.contact-strip .btn-outline {
+  border-color: #bfdbfe;
+  color: #ffffff;
+}
+
+/* ---------- Footer ---------- */
+
+.app-footer {
+  margin-top: auto;
+  padding: 1rem 1.5rem;
+  font-size: 0.78rem;
+  text-align: center;
+  color: #6b7280;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
   }
-  to {
-    transform: rotate(360deg);
+
+  .hero-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-main {
+    padding: 1.5rem 1rem 2.5rem;
+  }
+
+  .contact-strip {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

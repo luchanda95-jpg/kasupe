@@ -1,0 +1,143 @@
+/* Section background + spacing */
+.testimonials-section {
+  padding: 3rem 1rem 4rem;
+  background: #f5f7fb;
+}
+
+.testimonials-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.testimonials-header {
+  text-align: center;
+  margin-bottom: 2.2rem;
+}
+
+.testimonials-header h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.testimonials-header p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+/* Grid */
+.testimonials-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 768px) {
+  .testimonials-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Card */
+.testimonial-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.4rem 1.5rem 1.6rem;
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+  animation: testimonialFadeUp 0.6s ease-out both;
+}
+
+.testimonial-card-2 {
+  animation-delay: 0.08s;
+}
+
+/* Top row: avatar + name */
+.testimonial-top {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.7rem;
+}
+
+.testimonial-avatar-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+.testimonial-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.testimonial-top h3 {
+  margin: 0 0 0.15rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.testimonial-role {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.testimonial-trip {
+  margin: 0.1rem 0 0;
+  font-size: 0.8rem;
+  color: #2563eb;
+}
+
+/* Rating row */
+.testimonial-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  margin-bottom: 0.8rem;
+}
+
+.testimonial-star {
+  width: 14px;
+  height: 14px;
+}
+
+.testimonial-rating-text {
+  margin-left: 0.3rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Text */
+.testimonial-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+/* Animation */
+@keyframes testimonialFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Small screens */
+@media (max-width: 640px) {
+  .testimonials-section {
+    padding: 2.5rem 1rem 3rem;
+  }
+}

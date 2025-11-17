@@ -1,0 +1,156 @@
+.blog-masonry-section {
+  padding: 3rem 1.5rem 3.5rem;
+  background: #f5f7fb;
+}
+
+.blog-masonry-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+
+.blog-masonry-header {
+  text-align: center;
+  margin-bottom: 2.2rem;
+}
+
+.blog-masonry-header h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.blog-masonry-header p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+/* Masonry grid */
+
+.blog-masonry-grid {
+  column-count: 3;
+  column-gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .blog-masonry-grid {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .blog-masonry-grid {
+    column-count: 1;
+  }
+}
+
+/* Card */
+
+.blog-masonry-card {
+  display: inline-block;           /* needed for columns */
+  width: 100%;
+  margin: 0 0 1.5rem;
+  background: #ffffff;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+  break-inside: avoid;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.blog-masonry-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+}
+
+/* Image */
+
+.blog-masonry-image-wrap {
+  position: relative;
+  width: 100%;
+  background: #e5e7eb;
+}
+
+.blog-masonry-image {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* Tag on image */
+
+.blog-masonry-tag {
+  position: absolute;
+  left: 0.9rem;
+  top: 0.9rem;
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Body */
+
+.blog-masonry-body {
+  padding: 1rem 1.3rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.blog-masonry-date {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.blog-masonry-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.blog-masonry-excerpt {
+  margin: 0.3rem 0 0.6rem;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+/* Read more */
+
+.blog-masonry-readmore {
+  margin-top: auto;
+  align-self: flex-start;
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.blog-masonry-readmore span {
+  transition: transform 0.2s ease;
+}
+
+.blog-masonry-readmore:hover span {
+  transform: translateX(3px);
+}
+
+/* Small screens */
+
+@media (max-width: 640px) {
+  .blog-masonry-section {
+    padding: 2.5rem 1rem 3rem;
+  }
+}

@@ -1,0 +1,224 @@
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+/* ---------- Logo using SVG ---------- */
+
+.logo {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.logo-img {
+  height: 50px;      /* adjust to match your design */
+  width: auto;
+}
+
+/* ---------- Center: nav + search (desktop) ---------- */
+
+.header-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 2rem;
+  min-width: 280px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  font-size: 0.9rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #374151;
+  font-weight: 400;
+  transition: color 0.15s ease;
+}
+
+.nav-links a:hover {
+  color: #2563eb;
+}
+
+/* Search (desktop) */
+
+.nav-search,
+.mobile-search {
+  display: flex;
+  align-items: center;
+  padding: 0 0.9rem;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+}
+
+.nav-search input,
+.mobile-search input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: #111827;
+}
+
+.nav-search input::placeholder,
+.mobile-search input::placeholder {
+  color: #9ca3af;
+}
+
+.search-icon {
+  width: 14px;
+  height: 14px;
+  margin-left: 0.35rem;
+}
+
+/* ---------- Right side (desktop) ---------- */
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: #374151;
+  cursor: pointer;
+}
+
+.link-button:hover {
+  color: #2563eb;
+}
+
+.login-button {
+  padding: 0.55rem 1.6rem;
+  border-radius: 0.75rem;
+  border: none;
+  cursor: pointer;
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.9rem;
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
+}
+
+.login-button:hover {
+  background: #1d4ed8;
+}
+
+/* ---------- Hamburger (mobile only) ---------- */
+
+.menu-toggle {
+  display: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.menu-icon-img {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---------- Mobile menu panel ---------- */
+
+.mobile-menu {
+  display: none;
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 0.75rem 1.5rem 1rem;
+}
+
+.mobile-menu.open {
+  display: block;
+}
+
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.mobile-nav-links a {
+  text-decoration: none;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.mobile-nav-links a:hover {
+  color: #2563eb;
+}
+
+.mobile-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.8rem;
+}
+
+/* ---------- Visibility helpers ---------- */
+
+.desktop-only {
+  display: flex;
+}
+
+.mobile-only {
+  display: none;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .header-container {
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: flex;
+  }
+
+  .header-container {
+    gap: 0.75rem;
+  }
+
+  .mobile-search {
+    height: 40px;
+    margin-bottom: 0.75rem;
+  }
+}
