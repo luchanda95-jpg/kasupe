@@ -14,9 +14,10 @@ import BookingDetails from "./screens/BookingDetails";
 import BlogSection from "./components/BlogSection";
 import BlogDetails from "./screens/BlogDetails";
 
-import "./App.css";
 import About from "./screens/About";
 import ContractForm from "./screens/ContractForm";
+import Checkout from "./screens/Checkout";   // ⬅ ADD THIS
+import "./App.css";
 
 function App() {
   return (
@@ -30,12 +31,14 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/cars" element={<Cars />} />
             <Route path="/cars/:id" element={<CarDetails />} />
+            <Route path="/checkout" element={<Checkout />} />  {/* ⬅ ADD THIS */}
             <Route path="/my-bookings" element={<MyBookings />} />
             <Route path="/my-bookings/:id" element={<BookingDetails />} />
             <Route path="/blog" element={<BlogSection />} />
             <Route path="/blog/:id" element={<BlogDetails />} />
-             <Route path="/about" element={<About />} />
-             <Route path="/contract" element={<ContractForm />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contract" element={<ContractForm />} />
+
 
             {/* Optional 404 page */}
             {/* <Route path="*" element={<NotFound />} /> */}

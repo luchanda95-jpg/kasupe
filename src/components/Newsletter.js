@@ -1,7 +1,46 @@
-// src/components/Newsletter.js
+import { useState } from "react";
 import "./Newsletter.css";
 
+const API_BASE = "https://kasuper-server.onrender.com";
+
 function Newsletter() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState({ type: "", text: "" });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMsg({ type: "", text: "" });
+
+    if (!email.trim()) {
+      setMsg({ type: "error", text: "Please enter your email." });
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await fetch(`${API_BASE}/api/newsletter/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        throw new Error(data?.message || "Subscription failed.");
+      }
+
+      setMsg({ type: "success", text: data?.message || "Subscribed!" });
+      setEmail("");
+    } catch (err) {
+      setMsg({ type: "error", text: err.message || "Subscription failed." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className="newsletter-section">
       <div className="newsletter-inner">
@@ -11,23 +50,36 @@ function Newsletter() {
           discounts.
         </p>
 
-        <form
-          className="newsletter-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            // later we can connect this to backend / API
-          }}
-        >
+        <form className="newsletter-form" onSubmit={handleSubmit}>
           <input
             type="email"
             className="newsletter-input"
-            placeholder="Enter your email id"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <button type="submit" className="newsletter-button">
-            Subscribe
+
+          <button
+            type="submit"
+            className="newsletter-button"
+            disabled={loading}
+          >
+            {loading ? "Subscribing..." : "Subscribe"}
           </button>
         </form>
+
+        {msg.text && (
+          <p
+            style={{
+              marginTop: "0.6rem",
+              fontSize: "0.9rem",
+              color: msg.type === "success" ? "#15803d" : "#b91c1c",
+            }}
+          >
+            {msg.text}
+          </p>
+        )}
       </div>
     </section>
   );

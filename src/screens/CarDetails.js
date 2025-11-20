@@ -1,21 +1,24 @@
 // src/screens/CarDetails.js
 import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import "./CarDetails.css";
-import { dummyCarData, assets } from "../assets/assets";
+import { assets } from "../assets/assets";
+
+const API_BASE = "https://kasuper-server.onrender.com";
 
 function CarDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const car = dummyCarData.find((c) => c._id === id) || dummyCarData[0];
+  const [car, setCar] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const {
-    users_icon,
-    fuel_icon,
-    car_icon,
-    location_icon,
-    check_icon,
-  } = assets;
+  const [pickupDate, setPickupDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
+  const [dateError, setDateError] = useState("");
+
+  const { users_icon, fuel_icon, car_icon, location_icon, check_icon } = assets;
 
   const features = [
     "360 Camera",
@@ -25,10 +28,113 @@ function CarDetails() {
     "Heated Seats",
   ];
 
+  useEffect(() => {
+    const fetchCar = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const res = await fetch(`${API_BASE}/api/cars/${id}`);
+        if (!res.ok) {
+          if (res.status === 404) {
+            setError("Car not found.");
+          } else {
+            setError("Failed to load car details.");
+          }
+          setCar(null);
+          return;
+        }
+
+        const data = await res.json();
+        setCar(data);
+      } catch (err) {
+        console.error(err);
+        setError("Could not load car details. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchCar();
+    }
+  }, [id]);
+
+  const handleBack = () => {
+    navigate("/cars");
+  };
+
+  const calcDays = (startStr, endStr) => {
+    const start = new Date(startStr);
+    const end = new Date(endStr);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
+    const diffMs = end - start;
+    const days = Math.max(Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1, 1);
+    return days;
+  };
+
+  const handleBookNow = () => {
+    setDateError("");
+
+    if (!pickupDate || !returnDate) {
+      setDateError("Please select both pickup and return dates.");
+      return;
+    }
+
+    const days = calcDays(pickupDate, returnDate);
+    if (days <= 0) {
+      setDateError("Return date must be the same or after pickup date.");
+      return;
+    }
+
+    if (!car) {
+      setDateError("Car details not loaded yet.");
+      return;
+    }
+
+    // ✅ Go to Checkout screen with car + dates
+    navigate("/checkout", {
+      state: {
+        car,
+        pickupDate,
+        returnDate,
+      },
+    });
+  };
+
+  if (loading) {
+    return (
+      <section className="car-details-section">
+        <div className="car-details-inner">
+          <button className="car-back-btn" onClick={handleBack}>
+            ← Back to all cars
+          </button>
+          <p>Loading car details...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || !car) {
+    return (
+      <section className="car-details-section">
+        <div className="car-details-inner">
+          <button className="car-back-btn" onClick={handleBack}>
+            ← Back to all cars
+          </button>
+          <p style={{ color: "#b91c1c" }}>{error || "Car not found."}</p>
+        </div>
+      </section>
+    );
+  }
+
+  const imageSrc =
+    car.image || "https://via.placeholder.com/800x450?text=Kasupe+Car";
+
   return (
     <section className="car-details-section">
       <div className="car-details-inner">
-        <button className="car-back-btn" onClick={() => navigate("/cars")}>
+        <button className="car-back-btn" onClick={handleBack}>
           ← Back to all cars
         </button>
 
@@ -36,7 +142,7 @@ function CarDetails() {
         <div className="car-top-row">
           <div className="car-image-card">
             <img
-              src={car.image}
+              src={imageSrc}
               alt={`${car.brand} ${car.model}`}
               className="car-main-image"
             />
@@ -44,7 +150,7 @@ function CarDetails() {
 
           <aside className="car-booking-card">
             <div className="car-price-row">
-              <span className="car-price">${car.pricePerDay}</span>
+              <span className="car-price">K{car.pricePerDay}</span>
               <span className="car-price-unit">per day</span>
             </div>
 
@@ -53,22 +159,40 @@ function CarDetails() {
             <div className="car-booking-field">
               <label>Pickup Date</label>
               <div className="car-input-wrap">
-                <input type="text" placeholder="dd/mm/yyyy" />
+                <input
+                  type="date"
+                  value={pickupDate}
+                  onChange={(e) => setPickupDate(e.target.value)}
+                />
               </div>
             </div>
 
             <div className="car-booking-field">
               <label>Return Date</label>
               <div className="car-input-wrap">
-                <input type="text" placeholder="dd/mm/yyyy" />
+                <input
+                  type="date"
+                  value={returnDate}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                />
               </div>
             </div>
 
-            <button className="car-book-btn">Book Now</button>
+            <button className="car-book-btn" onClick={handleBookNow}>
+              Proceed to checkout
+            </button>
 
-            <p className="car-book-note">
-              No credit card required to reserve
-            </p>
+            {dateError && (
+              <p className="car-book-note" style={{ color: "#b91c1c" }}>
+                {dateError}
+              </p>
+            )}
+
+            {!dateError && (
+              <p className="car-book-note">
+                You’ll choose MTN, Airtel or Credit Card on the next step.
+              </p>
+            )}
           </aside>
         </div>
 
@@ -104,7 +228,9 @@ function CarDetails() {
 
           <div className="car-description">
             <h3>Description</h3>
-            <p>{car.description}</p>
+            <p>
+              {car.description || "No description provided for this vehicle."}
+            </p>
           </div>
 
           <div className="car-features">

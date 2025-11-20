@@ -1,11 +1,15 @@
 // src/screens/MyBookings.js
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./MyBookings.css";
 import { dummyMyBookingsData, assets } from "../assets/assets";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+
+const API_BASE = "https://kasuper-server.onrender.com";
 
 function MyBookings() {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const {
     calendar_icon_colored,
     location_icon_colored,
@@ -15,10 +19,28 @@ function MyBookings() {
   } = assets;
 
   const [filter, setFilter] = useState("all"); // all | upcoming | completed
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [usingDemo, setUsingDemo] = useState(false);
+  const [flashMessage, setFlashMessage] = useState("");
 
   const today = new Date();
 
+  // Show success banner if we just created a booking via checkout
+  useEffect(() => {
+    if (location.state?.justCreated) {
+      setFlashMessage(
+        "Your booking has been submitted and is pending confirmation."
+      );
+
+      // Clear the state so it doesn't show again on refresh
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location, navigate]);
+
   const formatDate = (iso) => {
+    if (!iso) return "—";
     const d = new Date(iso);
     return d.toLocaleDateString("en-GB", {
       day: "2-digit",
@@ -28,31 +50,68 @@ function MyBookings() {
   };
 
   const isCompleted = (booking) => {
+    if (!booking.returnDate) return false;
     const returnDate = new Date(booking.returnDate);
     return returnDate < today;
   };
 
+  // Load from API, fallback to dummy data if API fails
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const res = await fetch(`${API_BASE}/api/bookings`);
+        if (!res.ok) {
+          throw new Error("Failed to load bookings.");
+        }
+
+        const data = await res.json();
+        setBookings(Array.isArray(data) ? data : []);
+        setUsingDemo(false);
+      } catch (err) {
+        console.warn("Bookings API not available, using demo data.", err);
+        setBookings(dummyMyBookingsData || []);
+        setUsingDemo(true);
+        setError(
+          "Bookings API not reachable. Showing demo bookings only (changes are not saved)."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const filteredBookings = useMemo(() => {
-    if (filter === "all") return dummyMyBookingsData;
+    let source = bookings;
 
     if (filter === "upcoming") {
-      return dummyMyBookingsData.filter((b) => !isCompleted(b));
+      return source.filter((b) => !isCompleted(b));
     }
 
     if (filter === "completed") {
-      return dummyMyBookingsData.filter((b) => isCompleted(b));
+      return source.filter((b) => isCompleted(b));
     }
 
-    return dummyMyBookingsData;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, today]);
+    return source;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, bookings, today]);
 
   const getStatusLabel = (status) => {
     if (!status) return "Pending";
-    return status.charAt(0).toUpperCase() + status.slice(1);
+    return status;
+  };
+
+  const getStatusSlug = (status) => {
+    return (status || "Pending").toLowerCase();
   };
 
   const getTripLengthLabel = (booking) => {
+    if (!booking.pickupDate || !booking.returnDate) return "—";
     const start = new Date(booking.pickupDate);
     const end = new Date(booking.returnDate);
     const diffMs = end - start;
@@ -61,6 +120,24 @@ function MyBookings() {
     if (days === 1) return "Same-day hire";
     if (days === 2) return "2 days";
     return `${days} days`;
+  };
+
+  const getTotalPrice = (booking) => {
+    if (typeof booking.totalPrice === "number") return booking.totalPrice;
+    if (typeof booking.price === "number") return booking.price;
+    if (
+      booking.car &&
+      typeof booking.car.pricePerDay === "number" &&
+      booking.pickupDate &&
+      booking.returnDate
+    ) {
+      const start = new Date(booking.pickupDate);
+      const end = new Date(booking.returnDate);
+      const diffMs = end - start;
+      const days = Math.max(Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1, 1);
+      return days * booking.car.pricePerDay;
+    }
+    return 0;
   };
 
   return (
@@ -74,6 +151,24 @@ function MyBookings() {
             journeys and pending bookings.
           </p>
         </header>
+
+        {flashMessage && (
+          <div className="bookings-alert bookings-alert-success">
+            {flashMessage}
+          </div>
+        )}
+
+        {error && (
+          <p
+            style={{
+              fontSize: "0.8rem",
+              color: "#b91c1c",
+              marginBottom: "0.5rem",
+            }}
+          >
+            {error}
+          </p>
+        )}
 
         {/* Filter tabs */}
         <div className="bookings-filters">
@@ -106,8 +201,11 @@ function MyBookings() {
           </button>
         </div>
 
-        {/* No bookings state */}
-        {filteredBookings.length === 0 ? (
+        {loading ? (
+          <div className="bookings-empty">
+            <p>Loading your bookings…</p>
+          </div>
+        ) : filteredBookings.length === 0 ? (
           <div className="bookings-empty">
             <p>You don’t have any bookings in this category yet.</p>
             <button
@@ -121,8 +219,24 @@ function MyBookings() {
         ) : (
           <div className="bookings-list">
             {filteredBookings.map((booking) => {
-              const car = booking.car;
+              const car =
+                booking.car || booking.carSnapshot || booking.carInfo || {};
               const completed = isCompleted(booking);
+
+              const carBrand = car.brand || booking.carBrand || "Car";
+              const carModel = car.model || booking.carModel || "";
+              const carCategory = car.category || "Vehicle";
+              const carYear = car.year || "";
+              const carLocation =
+                car.location || booking.carLocation || "Pickup location";
+              const carImage =
+                car.image ||
+                booking.carImage ||
+                "https://via.placeholder.com/400x250?text=Kasupe+Car";
+
+              const statusLabel = getStatusLabel(booking.status);
+              const statusSlug = getStatusSlug(booking.status);
+              const totalPrice = getTotalPrice(booking);
 
               return (
                 <article className="booking-card" key={booking._id}>
@@ -130,20 +244,18 @@ function MyBookings() {
                   <div className="booking-card-top">
                     <div className="booking-status-pill-wrapper">
                       <span
-                        className={`booking-status-pill booking-status-${
-                          booking.status || "pending"
-                        }`}
+                        className={`booking-status-pill booking-status-${statusSlug}`}
                       >
                         <img
                           src={
-                            booking.status === "confirmed"
+                            statusLabel === "Confirmed"
                               ? tick_icon
                               : cautionIconColored
                           }
-                          alt={getStatusLabel(booking.status)}
+                          alt={statusLabel}
                           className="booking-status-icon"
                         />
-                        {getStatusLabel(booking.status)}
+                        {statusLabel}
                       </span>
                       {completed && (
                         <span className="booking-completed-label">
@@ -155,7 +267,7 @@ function MyBookings() {
                     <div className="booking-price">
                       <span className="booking-price-label">Total</span>
                       <span className="booking-price-value">
-                        ${booking.price}
+                        K{totalPrice}
                       </span>
                     </div>
                   </div>
@@ -165,8 +277,8 @@ function MyBookings() {
                     {/* Car image */}
                     <div className="booking-car-image-wrap">
                       <img
-                        src={car.image}
-                        alt={`${car.brand} ${car.model}`}
+                        src={carImage}
+                        alt={`${carBrand} ${carModel}`}
                         className="booking-car-image"
                       />
                     </div>
@@ -174,10 +286,10 @@ function MyBookings() {
                     {/* Details */}
                     <div className="booking-details">
                       <h2 className="booking-car-title">
-                        {car.brand} {car.model}
+                        {carBrand} {carModel}
                       </h2>
                       <p className="booking-car-meta">
-                        {car.category} • {car.year}
+                        {carCategory} {carYear && `• ${carYear}`}
                       </p>
 
                       {/* Location */}
@@ -187,7 +299,7 @@ function MyBookings() {
                           alt="Location"
                           className="booking-detail-icon"
                         />
-                        <span>{car.location}</span>
+                        <span>{carLocation}</span>
                       </div>
 
                       {/* Dates */}
@@ -253,8 +365,11 @@ function MyBookings() {
                   <div className="booking-footer-row">
                     <span className="booking-id-label">Booking ID:</span>
                     <span className="booking-id-value">
-                      {booking._id.slice(-8)}
+                      {booking._id ? booking._id.slice(-8) : "—"}
                     </span>
+                    {usingDemo && (
+                      <span className="booking-id-demo-tag">Demo</span>
+                    )}
                   </div>
                 </article>
               );

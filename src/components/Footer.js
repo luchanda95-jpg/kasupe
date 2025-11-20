@@ -67,9 +67,9 @@ function Footer() {
         <div className="footer-col">
           <h4>Contact</h4>
           <ul>
-            <li>Chipata / Lusaka · Zambia</li>
-            <li>+260 9XX XXX XXX</li>
-            <li>bookings@kasupecarhire.com</li>
+            <li>Plot number 1049, Fair view makanta close,(off makishi road)</li>
+            <li>260 979871629</li>
+            <li>kasupecarhire@gmail.com</li>
           </ul>
         </div>
       </div>

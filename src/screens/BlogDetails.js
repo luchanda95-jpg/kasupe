@@ -1,54 +1,131 @@
 // src/screens/BlogDetails.js
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./BlogDetails.css";
-import { getBlogPostById, blogPosts } from "../data/blogPosts";
+
+const API_BASE = "https://kasuper-server.onrender.com";
+
+const getId = (post) => post._id || post.id;
 
 function BlogDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const [post, setPost] = useState(null);
+  const [relatedPosts, setRelatedPosts] = useState([]);
   const [liked, setLiked] = useState(false);
   const [relatedIndex, setRelatedIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const post = getBlogPostById(id);
+  useEffect(() => {
+    const fetchPostAndRelated = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-  if (!post) {
+        // 1) Fetch the main post
+        const res = await fetch(`${API_BASE}/api/blogs/${id}`);
+        if (!res.ok) {
+          if (res.status === 404) {
+            setError("Blog post not found.");
+          } else {
+            setError("Failed to load blog post.");
+          }
+          setPost(null);
+          return;
+        }
+        const postData = await res.json();
+        setPost(postData);
+
+        // 2) Fetch all posts to build "related"
+        const resAll = await fetch(`${API_BASE}/api/blogs`);
+        if (resAll.ok) {
+          const all = await resAll.json();
+          const others = (Array.isArray(all) ? all : []).filter(
+            (p) => getId(p) !== getId(postData)
+          );
+          setRelatedPosts(others.slice(0, 3));
+        } else {
+          setRelatedPosts([]);
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Could not load blog details. Please try again later.");
+        setPost(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchPostAndRelated();
+    }
+  }, [id]);
+
+  const handleLike = () => setLiked((prev) => !prev);
+
+  const goBack = () => navigate(-1);
+
+  if (loading) {
     return (
       <section className="blog-details-section">
         <div className="blog-details-inner">
-          <button className="blog-back-btn" onClick={() => navigate(-1)}>
-            ← Back
+          <button className="blog-back-btn" onClick={goBack}>
+            ← Back to previous page
           </button>
-          <p>Blog post not found.</p>
+          <p>Loading article...</p>
         </div>
       </section>
     );
   }
 
-  const relatedPosts = blogPosts.filter((p) => p.id !== post.id).slice(0, 3);
+  if (error || !post) {
+    return (
+      <section className="blog-details-section">
+        <div className="blog-details-inner">
+          <button className="blog-back-btn" onClick={goBack}>
+            ← Back to previous page
+          </button>
+          <p style={{ color: "#b91c1c" }}>{error || "Blog post not found."}</p>
+        </div>
+      </section>
+    );
+  }
 
-  const handleLike = () => {
-    setLiked((prev) => !prev);
-  };
+  const imageSrc =
+    post.image ||
+    "https://via.placeholder.com/900x500?text=Kasupe+Blog";
+
+  const contentParagraphs = Array.isArray(post.content)
+    ? post.content
+    : typeof post.content === "string"
+    ? [post.content]
+    : [];
 
   return (
     <section className="blog-details-section">
       <div className="blog-details-inner">
         {/* Back button */}
-        <button className="blog-back-btn" onClick={() => navigate(-1)}>
+        <button className="blog-back-btn" onClick={goBack}>
           ← Back to previous page
         </button>
 
         {/* Meta row */}
         <div className="blog-details-tag-row">
-          <span className="blog-details-tag">{post.tag}</span>
-          <span className="blog-details-dot">•</span>
-          <span className="blog-details-date">{post.date}</span>
+          {post.tag && <span className="blog-details-tag">{post.tag}</span>}
+          {(post.tag || post.date) && (
+            <span className="blog-details-dot">•</span>
+          )}
+          {post.date && (
+            <span className="blog-details-date">{post.date}</span>
+          )}
           {post.readingTime && (
             <>
               <span className="blog-details-dot">•</span>
-              <span className="blog-details-reading">{post.readingTime}</span>
+              <span className="blog-details-reading">
+                {post.readingTime}
+              </span>
             </>
           )}
         </div>
@@ -63,7 +140,7 @@ function BlogDetails() {
         {/* Hero image */}
         <div className="blog-details-hero-wrap">
           <img
-            src={post.image}
+            src={imageSrc}
             alt={post.title}
             className="blog-details-hero-image"
           />
@@ -71,7 +148,7 @@ function BlogDetails() {
 
         {/* Content paragraphs */}
         <div className="blog-details-content">
-          {post.content.map((para, index) => (
+          {contentParagraphs.map((para, index) => (
             <p key={index}>{para}</p>
           ))}
         </div>
@@ -129,7 +206,6 @@ function BlogDetails() {
               type="button"
               className="blog-consult-btn"
               onClick={() => {
-                // You can later swap this for a /contact page or WhatsApp link
                 window.location.href = "mailto:bookings@kasupecarhire.com";
               }}
             >
@@ -149,31 +225,40 @@ function BlogDetails() {
                     transform: `translateX(-${relatedIndex * 100}%)`,
                   }}
                 >
-                  {relatedPosts.map((rp) => (
-                    <article
-                      key={rp.id}
-                      className="blog-related-slide"
-                      onClick={() => navigate(`/blog/${rp.id}`)}
-                    >
-                      <div className="blog-related-card">
-                        <div className="blog-related-image-wrap">
-                          <img
-                            src={rp.image}
-                            alt={rp.title}
-                            className="blog-related-image"
-                          />
+                  {relatedPosts.map((rp) => {
+                    const rId = getId(rp);
+                    const rImg =
+                      rp.image ||
+                      "https://via.placeholder.com/400x250?text=Kasupe+Blog";
+
+                    return (
+                      <article
+                        key={rId}
+                        className="blog-related-slide"
+                        onClick={() => navigate(`/blog/${rId}`)}
+                      >
+                        <div className="blog-related-card">
+                          <div className="blog-related-image-wrap">
+                            <img
+                              src={rImg}
+                              alt={rp.title}
+                              className="blog-related-image"
+                            />
+                          </div>
+                          <div className="blog-related-body">
+                            <p className="blog-related-tag-date">
+                              {rp.tag && <span>{rp.tag}</span>}
+                              {rp.tag && rp.date && " · "}
+                              {rp.date && <span>{rp.date}</span>}
+                            </p>
+                            <h4 className="blog-related-title">
+                              {rp.title}
+                            </h4>
+                          </div>
                         </div>
-                        <div className="blog-related-body">
-                          <p className="blog-related-tag-date">
-                            <span>{rp.tag}</span> · <span>{rp.date}</span>
-                          </p>
-                          <h4 className="blog-related-title">
-                            {rp.title}
-                          </h4>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
+                      </article>
+                    );
+                  })}
                 </div>
               </div>
 
