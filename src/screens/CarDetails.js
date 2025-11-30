@@ -1,10 +1,23 @@
-// src/screens/CarDetails.js
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./CarDetails.css";
 import { assets } from "../assets/assets";
 
 const API_BASE = "https://kasuper-server.onrender.com";
+
+const placeholderImg =
+  "https://via.placeholder.com/800x450?text=Kasupe+Car";
+
+// Helper: resolve car.image into a usable URL
+const getCarImageUrl = (car) => {
+  if (!car || !car.image) return placeholderImg;
+
+  if (typeof car.image === "string" && car.image.startsWith("http")) {
+    return car.image;
+  }
+
+  return `${API_BASE}${car.image}`;
+};
 
 function CarDetails() {
   const { id } = useParams();
@@ -67,7 +80,8 @@ function CarDetails() {
   const calcDays = (startStr, endStr) => {
     const start = new Date(startStr);
     const end = new Date(endStr);
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()))
+      return 0;
     const diffMs = end - start;
     const days = Math.max(Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1, 1);
     return days;
@@ -92,7 +106,7 @@ function CarDetails() {
       return;
     }
 
-    // ✅ Go to Checkout screen with car + dates
+    // Go to Checkout screen with car + dates
     navigate("/checkout", {
       state: {
         car,
@@ -128,8 +142,7 @@ function CarDetails() {
     );
   }
 
-  const imageSrc =
-    car.image || "https://via.placeholder.com/800x450?text=Kasupe+Car";
+  const imageSrc = getCarImageUrl(car);
 
   return (
     <section className="car-details-section">

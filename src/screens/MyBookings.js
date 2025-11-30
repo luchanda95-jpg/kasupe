@@ -1,10 +1,23 @@
-// src/screens/MyBookings.js
 import { useEffect, useMemo, useState } from "react";
 import "./MyBookings.css";
 import { dummyMyBookingsData, assets } from "../assets/assets";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const API_BASE = "https://kasuper-server.onrender.com";
+
+const placeholderCarImg =
+  "https://via.placeholder.com/400x250?text=Kasupe+Car";
+
+// Helper: resolve a car image path or URL
+const getCarImageUrl = (image) => {
+  if (!image) return placeholderCarImg;
+
+  if (typeof image === "string" && image.startsWith("http")) {
+    return image;
+  }
+
+  return `${API_BASE}${image}`;
+};
 
 function MyBookings() {
   const navigate = useNavigate();
@@ -55,7 +68,7 @@ function MyBookings() {
     return returnDate < today;
   };
 
-  // Load from API, fallback to dummy data if API fails
+  // Load from API, fallback to demo data if API fails
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -229,10 +242,10 @@ function MyBookings() {
               const carYear = car.year || "";
               const carLocation =
                 car.location || booking.carLocation || "Pickup location";
-              const carImage =
-                car.image ||
-                booking.carImage ||
-                "https://via.placeholder.com/400x250?text=Kasupe+Car";
+
+              // Use server-relative image or booking.carImage if present
+              const rawImage = car.image || booking.carImage;
+              const carImage = getCarImageUrl(rawImage);
 
               const statusLabel = getStatusLabel(booking.status);
               const statusSlug = getStatusSlug(booking.status);

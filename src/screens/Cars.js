@@ -1,10 +1,25 @@
-// src/screens/Cars.js
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../components/FeaturedVehicles.css";
 import { assets } from "../assets/assets";
 
 const API_BASE = "https://kasuper-server.onrender.com";
+
+const placeholderImg =
+  "https://via.placeholder.com/400x250?text=Kasupe+Car";
+
+// Helper: build correct image URL for each car
+const getCarImageUrl = (car) => {
+  if (!car || !car.image) return placeholderImg;
+
+  // If it's already a full URL (http/https), use it directly
+  if (typeof car.image === "string" && car.image.startsWith("http")) {
+    return car.image;
+  }
+
+  // Otherwise treat it as a relative path like /uploads/cars/xxx.jpg
+  return `${API_BASE}${car.image}`;
+};
 
 function Cars() {
   const navigate = useNavigate();
@@ -27,7 +42,6 @@ function Cars() {
         }
 
         const data = await res.json();
-        // Expect an array of car objects from the API
         setCars(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
@@ -41,7 +55,7 @@ function Cars() {
   }, []);
 
   const filteredCars = cars
-    // show only cars that are available (or missing isAvailable)
+    // Only show cars that are available (or if isAvailable is missing)
     .filter((car) => car.isAvailable !== false)
     .filter((car) => {
       const text = `${car.brand || ""} ${car.model || ""} ${
@@ -86,9 +100,7 @@ function Cars() {
         {!loading && !error && filteredCars.length > 0 && (
           <div className="featured-grid">
             {filteredCars.map((car) => {
-              const imgSrc =
-                car.image ||
-                "https://via.placeholder.com/400x250?text=Kasupe+Car";
+              const imgSrc = getCarImageUrl(car);
 
               return (
                 <article
