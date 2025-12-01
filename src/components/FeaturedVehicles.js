@@ -6,6 +6,21 @@ import { assets } from "../assets/assets";
 
 const API_BASE = "https://kasuper-server.onrender.com";
 
+const placeholderImg =
+  "https://via.placeholder.com/400x250?text=Kasupe+Car";
+
+const getCarImageUrl = (car) => {
+  if (!car?.image) return placeholderImg;
+
+  // If already an absolute URL, use as-is
+  if (typeof car.image === "string" && car.image.startsWith("http")) {
+    return car.image;
+  }
+
+  // Otherwise it’s a relative path from the API server
+  return `${API_BASE}${car.image}`;
+};
+
 function FeaturedVehicles() {
   const navigate = useNavigate();
   const { users_icon, fuel_icon, location_icon, car_icon } = assets;
@@ -70,9 +85,7 @@ function FeaturedVehicles() {
         {!loading && !error && featured.length > 0 && (
           <div className="featured-grid">
             {featured.map((car) => {
-              const imgSrc =
-                car.image ||
-                "https://via.placeholder.com/400x250?text=Kasupe+Car";
+              const imgSrc = getCarImageUrl(car);
 
               return (
                 <article
