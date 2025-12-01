@@ -1,11 +1,27 @@
-// src/screens/BlogDetails.js
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./BlogDetails.css";
 
 const API_BASE = "https://kasuper-server.onrender.com";
 
+// helper: support both Mongo _id and local demo id
 const getId = (post) => post._id || post.id;
+
+// image helper – handles relative paths and full URLs
+const getBlogImageUrl = (post) => {
+  if (!post || !post.image) {
+    return "https://via.placeholder.com/900x500?text=Kasupe+Blog";
+  }
+
+  const img = post.image;
+  // if already a full http/https URL, just use it
+  if (img.startsWith("http://") || img.startsWith("https://")) {
+    return img;
+  }
+
+  // otherwise treat it as relative (e.g. /uploads/blogs/...)
+  return `${API_BASE}${img}`;
+};
 
 function BlogDetails() {
   const { id } = useParams();
@@ -22,16 +38,14 @@ function BlogDetails() {
     if (!id) return;
 
     let isMounted = true;
-    let isFirst = true;
 
     const fetchPostAndRelated = async () => {
       try {
-        if (isFirst) {
-          setLoading(true);
-          setError("");
-        }
+        if (!isMounted) return;
+        setError("");
 
         // 1) Fetch the main post
+        if (isMounted) setLoading(true);
         const res = await fetch(`${API_BASE}/api/blogs/${id}`);
         if (!res.ok) {
           if (res.status === 404) {
@@ -44,28 +58,35 @@ function BlogDetails() {
         if (!isMounted) return;
         setPost(postData);
 
-        // 2) Fetch all posts to build "related"
+        // 2) Fetch all posts to build "recommended" slider
         const resAll = await fetch(`${API_BASE}/api/blogs`);
         if (resAll.ok) {
           const all = await resAll.json();
           if (!isMounted) return;
+
           const others = (Array.isArray(all) ? all : []).filter(
             (p) => getId(p) !== getId(postData)
           );
-          setRelatedPosts(others.slice(0, 3));
+
+          // ✅ NO SLICE – use ALL other posts in the slider
+          setRelatedPosts(others);
+          // reset slider index when list changes
+          setRelatedIndex(0);
         } else {
           if (isMounted) setRelatedPosts([]);
         }
       } catch (err) {
         console.error(err);
         if (isMounted) {
-          setError(err.message || "Could not load blog details. Please try again later.");
+          setError(
+            err.message ||
+              "Could not load blog details. Please try again later."
+          );
           setPost(null);
         }
       } finally {
-        if (isMounted && isFirst) {
+        if (isMounted) {
           setLoading(false);
-          isFirst = false;
         }
       }
     };
@@ -73,7 +94,7 @@ function BlogDetails() {
     // initial load
     fetchPostAndRelated();
 
-    // 🔁 refresh every 30s
+    // 🔁 refresh every 30 seconds
     const intervalId = setInterval(fetchPostAndRelated, 30000);
 
     return () => {
@@ -112,9 +133,7 @@ function BlogDetails() {
     );
   }
 
-  const imageSrc =
-    post.image ||
-    "https://via.placeholder.com/900x500?text=Kasupe+Blog";
+  const imageSrc = getBlogImageUrl(post);
 
   const contentParagraphs = Array.isArray(post.content)
     ? post.content
@@ -142,9 +161,7 @@ function BlogDetails() {
           {post.readingTime && (
             <>
               <span className="blog-details-dot">•</span>
-              <span className="blog-details-reading">
-                {post.readingTime}
-              </span>
+              <span className="blog-details-reading">{post.readingTime}</span>
             </>
           )}
         </div>
@@ -232,7 +249,7 @@ function BlogDetails() {
             </button>
           </div>
 
-          {/* Recommended reads – slider with dots */}
+          {/* Recommended reads – SLIDER with dots, all posts */}
           {relatedPosts.length > 0 && (
             <div className="blog-related-section">
               <h3>Recommended reads</h3>
@@ -246,9 +263,7 @@ function BlogDetails() {
                 >
                   {relatedPosts.map((rp) => {
                     const rId = getId(rp);
-                    const rImg =
-                      rp.image ||
-                      "https://via.placeholder.com/400x250?text=Kasupe+Blog";
+                    const rImg = getBlogImageUrl(rp);
 
                     return (
                       <article
