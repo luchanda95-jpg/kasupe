@@ -1,28 +1,11 @@
+// src/screens/BlogDetails.js
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./BlogDetails.css";
 
 const API_BASE = "https://kasuper-server.onrender.com";
 
-const placeholderBlogHero =
-  "https://via.placeholder.com/900x500?text=Kasupe+Blog";
-const placeholderBlogCard =
-  "https://via.placeholder.com/400x250?text=Kasupe+Blog";
-
 const getId = (post) => post._id || post.id;
-
-// Helper: build correct blog image URL
-const getBlogImageUrl = (src, variant = "hero") => {
-  const placeholder = variant === "card" ? placeholderBlogCard : placeholderBlogHero;
-
-  if (!src) return placeholder;
-
-  if (typeof src === "string" && src.startsWith("http")) {
-    return src;
-  }
-
-  return `${API_BASE}${src}`;
-};
 
 function BlogDetails() {
   const { id } = useParams();
@@ -36,48 +19,67 @@ function BlogDetails() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!id) return;
+
+    let isMounted = true;
+    let isFirst = true;
+
     const fetchPostAndRelated = async () => {
       try {
-        setLoading(true);
-        setError("");
+        if (isFirst) {
+          setLoading(true);
+          setError("");
+        }
 
         // 1) Fetch the main post
         const res = await fetch(`${API_BASE}/api/blogs/${id}`);
         if (!res.ok) {
           if (res.status === 404) {
-            setError("Blog post not found.");
+            throw new Error("Blog post not found.");
           } else {
-            setError("Failed to load blog post.");
+            throw new Error("Failed to load blog post.");
           }
-          setPost(null);
-          return;
         }
         const postData = await res.json();
+        if (!isMounted) return;
         setPost(postData);
 
         // 2) Fetch all posts to build "related"
         const resAll = await fetch(`${API_BASE}/api/blogs`);
         if (resAll.ok) {
           const all = await resAll.json();
+          if (!isMounted) return;
           const others = (Array.isArray(all) ? all : []).filter(
             (p) => getId(p) !== getId(postData)
           );
           setRelatedPosts(others.slice(0, 3));
         } else {
-          setRelatedPosts([]);
+          if (isMounted) setRelatedPosts([]);
         }
       } catch (err) {
         console.error(err);
-        setError("Could not load blog details. Please try again later.");
-        setPost(null);
+        if (isMounted) {
+          setError(err.message || "Could not load blog details. Please try again later.");
+          setPost(null);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted && isFirst) {
+          setLoading(false);
+          isFirst = false;
+        }
       }
     };
 
-    if (id) {
-      fetchPostAndRelated();
-    }
+    // initial load
+    fetchPostAndRelated();
+
+    // 🔁 refresh every 30s
+    const intervalId = setInterval(fetchPostAndRelated, 30000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
   }, [id]);
 
   const handleLike = () => setLiked((prev) => !prev);
@@ -110,7 +112,9 @@ function BlogDetails() {
     );
   }
 
-  const imageSrc = getBlogImageUrl(post.image, "hero");
+  const imageSrc =
+    post.image ||
+    "https://via.placeholder.com/900x500?text=Kasupe+Blog";
 
   const contentParagraphs = Array.isArray(post.content)
     ? post.content
@@ -242,7 +246,9 @@ function BlogDetails() {
                 >
                   {relatedPosts.map((rp) => {
                     const rId = getId(rp);
-                    const rImg = getBlogImageUrl(rp.image, "card");
+                    const rImg =
+                      rp.image ||
+                      "https://via.placeholder.com/400x250?text=Kasupe+Blog";
 
                     return (
                       <article

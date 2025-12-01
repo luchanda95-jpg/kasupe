@@ -1,3 +1,4 @@
+// src/screens/Cars.js
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../components/FeaturedVehicles.css";
@@ -8,22 +9,20 @@ const API_BASE = "https://kasuper-server.onrender.com";
 const placeholderImg =
   "https://via.placeholder.com/400x250?text=Kasupe+Car";
 
-// Helper: build correct image URL for each car
 const getCarImageUrl = (car) => {
   if (!car || !car.image) return placeholderImg;
 
-  // If it's already a full URL (http/https), use it directly
   if (typeof car.image === "string" && car.image.startsWith("http")) {
     return car.image;
   }
 
-  // Otherwise treat it as a relative path like /uploads/cars/xxx.jpg
   return `${API_BASE}${car.image}`;
 };
 
 function Cars() {
   const navigate = useNavigate();
-  const { users_icon, fuel_icon, location_icon, car_icon, search_icon } = assets;
+  const { users_icon, fuel_icon, location_icon, car_icon, search_icon } =
+    assets;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [cars, setCars] = useState([]);
@@ -31,10 +30,15 @@ function Cars() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
+    let isFirst = true;
+
     const fetchCars = async () => {
       try {
-        setLoading(true);
-        setError("");
+        if (isFirst) {
+          setLoading(true);
+          setError("");
+        }
 
         const res = await fetch(`${API_BASE}/api/cars`);
         if (!res.ok) {
@@ -42,20 +46,35 @@ function Cars() {
         }
 
         const data = await res.json();
-        setCars(Array.isArray(data) ? data : []);
+        if (isMounted) {
+          setCars(Array.isArray(data) ? data : []);
+        }
       } catch (err) {
         console.error(err);
-        setError("Could not load cars. Please try again later.");
+        if (isMounted) {
+          setError("Could not load cars. Please try again later.");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted && isFirst) {
+          setLoading(false);
+          isFirst = false;
+        }
       }
     };
 
+    // initial load
     fetchCars();
+
+    // 🔁 refresh every 30s
+    const intervalId = setInterval(fetchCars, 30000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
   }, []);
 
   const filteredCars = cars
-    // Only show cars that are available (or if isAvailable is missing)
     .filter((car) => car.isAvailable !== false)
     .filter((car) => {
       const text = `${car.brand || ""} ${car.model || ""} ${
@@ -85,7 +104,6 @@ function Cars() {
           </div>
         </div>
 
-        {/* Loading & error states */}
         {loading && <p className="cars-empty">Loading cars...</p>}
         {error && !loading && (
           <p className="cars-empty" style={{ color: "#b91c1c" }}>

@@ -1,23 +1,10 @@
+// src/screens/MyBookings.js
 import { useEffect, useMemo, useState } from "react";
 import "./MyBookings.css";
 import { dummyMyBookingsData, assets } from "../assets/assets";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const API_BASE = "https://kasuper-server.onrender.com";
-
-const placeholderCarImg =
-  "https://via.placeholder.com/400x250?text=Kasupe+Car";
-
-// Helper: resolve a car image path or URL
-const getCarImageUrl = (image) => {
-  if (!image) return placeholderCarImg;
-
-  if (typeof image === "string" && image.startsWith("http")) {
-    return image;
-  }
-
-  return `${API_BASE}${image}`;
-};
 
 function MyBookings() {
   const navigate = useNavigate();
@@ -47,7 +34,6 @@ function MyBookings() {
         "Your booking has been submitted and is pending confirmation."
       );
 
-      // Clear the state so it doesn't show again on refresh
       navigate(location.pathname, { replace: true, state: null });
     }
   }, [location, navigate]);
@@ -68,12 +54,16 @@ function MyBookings() {
     return returnDate < today;
   };
 
-  // Load from API, fallback to demo data if API fails
   useEffect(() => {
+    let isMounted = true;
+    let isFirst = true;
+
     const fetchBookings = async () => {
       try {
-        setLoading(true);
-        setError("");
+        if (isFirst) {
+          setLoading(true);
+          setError("");
+        }
 
         const res = await fetch(`${API_BASE}/api/bookings`);
         if (!res.ok) {
@@ -81,21 +71,37 @@ function MyBookings() {
         }
 
         const data = await res.json();
-        setBookings(Array.isArray(data) ? data : []);
-        setUsingDemo(false);
+        if (isMounted) {
+          setBookings(Array.isArray(data) ? data : []);
+          setUsingDemo(false);
+        }
       } catch (err) {
         console.warn("Bookings API not available, using demo data.", err);
-        setBookings(dummyMyBookingsData || []);
-        setUsingDemo(true);
-        setError(
-          "Bookings API not reachable. Showing demo bookings only (changes are not saved)."
-        );
+        if (isMounted) {
+          setBookings(dummyMyBookingsData || []);
+          setUsingDemo(true);
+          setError(
+            "Bookings API not reachable. Showing demo bookings only (changes are not saved)."
+          );
+        }
       } finally {
-        setLoading(false);
+        if (isMounted && isFirst) {
+          setLoading(false);
+          isFirst = false;
+        }
       }
     };
 
+    // initial load
     fetchBookings();
+
+    // 🔁 refresh every 30s
+    const intervalId = setInterval(fetchBookings, 30000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -242,10 +248,10 @@ function MyBookings() {
               const carYear = car.year || "";
               const carLocation =
                 car.location || booking.carLocation || "Pickup location";
-
-              // Use server-relative image or booking.carImage if present
-              const rawImage = car.image || booking.carImage;
-              const carImage = getCarImageUrl(rawImage);
+              const carImage =
+                car.image ||
+                booking.carImage ||
+                "https://via.placeholder.com/400x250?text=Kasupe+Car";
 
               const statusLabel = getStatusLabel(booking.status);
               const statusSlug = getStatusSlug(booking.status);

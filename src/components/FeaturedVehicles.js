@@ -10,14 +10,13 @@ const placeholderImg =
   "https://via.placeholder.com/400x250?text=Kasupe+Car";
 
 const getCarImageUrl = (car) => {
-  if (!car?.image) return placeholderImg;
+  if (!car || !car.image) return placeholderImg;
 
-  // If already an absolute URL, use as-is
   if (typeof car.image === "string" && car.image.startsWith("http")) {
     return car.image;
   }
 
-  // Otherwise it’s a relative path from the API server
+  // relative path from API
   return `${API_BASE}${car.image}`;
 };
 
@@ -30,10 +29,15 @@ function FeaturedVehicles() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
+    let isFirst = true;
+
     const fetchCars = async () => {
       try {
-        setLoading(true);
-        setError("");
+        if (isFirst) {
+          setLoading(true);
+          setError("");
+        }
 
         const res = await fetch(`${API_BASE}/api/cars`);
         if (!res.ok) {
@@ -41,16 +45,32 @@ function FeaturedVehicles() {
         }
 
         const data = await res.json();
-        setCars(Array.isArray(data) ? data : []);
+        if (isMounted) {
+          setCars(Array.isArray(data) ? data : []);
+        }
       } catch (err) {
         console.error(err);
-        setError("Could not load featured cars. Please try again later.");
+        if (isMounted) {
+          setError("Could not load featured cars. Please try again later.");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted && isFirst) {
+          setLoading(false);
+          isFirst = false;
+        }
       }
     };
 
+    // initial load
     fetchCars();
+
+    // 🔁 auto-refresh every 30s
+    const intervalId = setInterval(fetchCars, 30000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
   }, []);
 
   // only available cars, then take first 6

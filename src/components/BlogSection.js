@@ -5,8 +5,31 @@ import "./BlogSection.css";
 
 const API_BASE = "https://kasuper-server.onrender.com";
 
+const placeholderBlogImg =
+  "https://via.placeholder.com/600x400?text=Kasupe+Blog";
+
 // helper: support both Mongo _id and local demo id
 const getId = (post) => post._id || post.id;
+
+// helper: normalize blog image URL
+const getBlogImageUrl = (post) => {
+  if (!post || !post.image) return placeholderBlogImg;
+
+  const img = post.image;
+
+  // already a full URL
+  if (typeof img === "string" && img.startsWith("http")) {
+    return img;
+  }
+
+  // relative like "/uploads/blogs/..."
+  if (typeof img === "string" && img.startsWith("/")) {
+    return `${API_BASE}${img}`;
+  }
+
+  // bare "uploads/blogs/..."
+  return `${API_BASE}/${img.replace(/^\/+/, "")}`;
+};
 
 function BlogSection() {
   const navigate = useNavigate();
@@ -16,10 +39,15 @@ function BlogSection() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
+    let isFirst = true;
+
     const fetchPosts = async () => {
       try {
-        setLoading(true);
-        setError("");
+        if (isFirst) {
+          setLoading(true);
+          setError("");
+        }
 
         const res = await fetch(`${API_BASE}/api/blogs`);
         if (!res.ok) {
@@ -27,16 +55,32 @@ function BlogSection() {
         }
 
         const data = await res.json();
-        setPosts(Array.isArray(data) ? data : []);
+        if (isMounted) {
+          setPosts(Array.isArray(data) ? data : []);
+        }
       } catch (err) {
         console.error(err);
-        setError("Could not load blog posts. Please try again later.");
+        if (isMounted) {
+          setError("Could not load blog posts. Please try again later.");
+        }
       } finally {
-        setLoading(false);
+        if (isMounted && isFirst) {
+          setLoading(false);
+          isFirst = false;
+        }
       }
     };
 
+    // initial load
     fetchPosts();
+
+    // 🔁 auto-refresh every 30 seconds
+    const intervalId = setInterval(fetchPosts, 30000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
   }, []);
 
   return (
@@ -70,9 +114,7 @@ function BlogSection() {
           <div className="blog-masonry-grid">
             {posts.map((post) => {
               const id = getId(post);
-              const imageSrc =
-                post.image ||
-                "https://via.placeholder.com/600x400?text=Kasupe+Blog";
+              const imageSrc = getBlogImageUrl(post);
 
               return (
                 <article
@@ -92,12 +134,8 @@ function BlogSection() {
                   </div>
 
                   <div className="blog-masonry-body">
-                    <p className="blog-masonry-date">
-                      {post.date || ""}
-                    </p>
-                    <h3 className="blog-masonry-title">
-                      {post.title}
-                    </h3>
+                    <p className="blog-masonry-date">{post.date || ""}</p>
+                    <h3 className="blog-masonry-title">{post.title}</h3>
                     {post.excerpt && (
                       <p className="blog-masonry-excerpt">
                         {post.excerpt}
