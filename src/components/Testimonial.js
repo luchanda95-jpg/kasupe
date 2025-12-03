@@ -2,8 +2,7 @@
 import { useEffect, useState } from "react";
 import "./Testimonials.css";
 import { assets } from "../assets/assets";
-
-const API_BASE = "https://kasuper-server.onrender.com";
+import { API_BASE, apiFetch } from "../utils/api";
 
 // Demo fallback (keep OUTSIDE component to avoid re-render loops)
 const demoTestimonials = [
@@ -38,7 +37,7 @@ function Testimonials() {
   // ✅ Convert stored path to a usable browser URL
   const resolveImage = (img) => {
     if (!img) return "https://via.placeholder.com/90x90?text=User";
-    if (img.startsWith("http")) return img;          // full URL already OK
+    if (img.startsWith("http")) return img; // full URL already OK
     if (img.startsWith("/uploads")) return API_BASE + img; // server uploads
     return API_BASE + "/" + img.replace(/^\/+/, ""); // any other relative path
   };
@@ -46,7 +45,7 @@ function Testimonials() {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/testimonials`);
+        const res = await apiFetch("/api/testimonials");
         if (!res.ok) throw new Error("API not ready");
 
         const data = await res.json();
@@ -92,7 +91,9 @@ function Testimonials() {
                 <div className="testimonial-top">
                   <div className="testimonial-avatar-wrap">
                     <img
-                      src={resolveImage(item.image || item.imageUrl || item.photo)}
+                      src={resolveImage(
+                        item.image || item.imageUrl || item.photo
+                      )}
                       alt={item.name}
                       className="testimonial-avatar"
                     />

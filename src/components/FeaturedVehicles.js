@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./FeaturedVehicles.css";
 import { assets } from "../assets/assets";
-
-const API_BASE = "https://kasuper-server.onrender.com";
+import { API_BASE, apiFetch } from "../utils/api";
 
 const placeholderImg =
   "https://via.placeholder.com/400x250?text=Kasupe+Car";
@@ -39,7 +38,7 @@ function FeaturedVehicles() {
           setError("");
         }
 
-        const res = await fetch(`${API_BASE}/api/cars`);
+        const res = await apiFetch("/api/cars");
         if (!res.ok) {
           throw new Error("Failed to load featured cars.");
         }

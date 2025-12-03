@@ -2,8 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./BlogSection.css";
-
-const API_BASE = "https://kasuper-server.onrender.com";
+import { API_BASE, apiFetch } from "../utils/api";
 
 const placeholderBlogImg =
   "https://via.placeholder.com/600x400?text=Kasupe+Blog";
@@ -49,7 +48,7 @@ function BlogSection() {
           setError("");
         }
 
-        const res = await fetch(`${API_BASE}/api/blogs`);
+        const res = await apiFetch("/api/blogs");
         if (!res.ok) {
           throw new Error("Failed to load blog posts.");
         }

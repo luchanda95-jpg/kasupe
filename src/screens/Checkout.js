@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "./Checkout.css";
 import { assets } from "../assets/assets";
 
-const API_BASE = "https://kasuper-server.onrender.com";
+const API_BASE = "https://kasuper-server-84g2.onrender.com";
 
 function Checkout() {
   const location = useLocation();

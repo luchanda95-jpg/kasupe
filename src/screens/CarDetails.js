@@ -2,8 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./CarDetails.css";
 import { assets } from "../assets/assets";
-
-const API_BASE = "https://kasuper-server.onrender.com";
+import { API_BASE, apiFetch } from "../utils/api"; // ✅ NEW
 
 const placeholderImg =
   "https://via.placeholder.com/800x450?text=Kasupe+Car";
@@ -12,10 +11,12 @@ const placeholderImg =
 const getCarImageUrl = (car) => {
   if (!car || !car.image) return placeholderImg;
 
+  // For Cloudinary-stored images, this will already be a full https URL
   if (typeof car.image === "string" && car.image.startsWith("http")) {
     return car.image;
   }
 
+  // Fallback for any legacy relative paths
   return `${API_BASE}${car.image}`;
 };
 
@@ -47,7 +48,7 @@ function CarDetails() {
         setLoading(true);
         setError("");
 
-        const res = await fetch(`${API_BASE}/api/cars/${id}`);
+        const res = await apiFetch(`/api/cars/${id}`); // ✅ uses helper
         if (!res.ok) {
           if (res.status === 404) {
             setError("Car not found.");

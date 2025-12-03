@@ -1,7 +1,7 @@
+// src/components/Newsletter.js
 import { useState } from "react";
 import "./Newsletter.css";
-
-const API_BASE = "https://kasuper-server.onrender.com";
+import { apiFetch } from "../utils/api";
 
 function Newsletter() {
   const [email, setEmail] = useState("");
@@ -20,7 +20,7 @@ function Newsletter() {
     try {
       setLoading(true);
 
-      const res = await fetch(`${API_BASE}/api/newsletter/subscribe`, {
+      const res = await apiFetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

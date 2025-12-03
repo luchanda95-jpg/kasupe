@@ -4,7 +4,7 @@ import "./MyBookings.css";
 import { dummyMyBookingsData, assets } from "../assets/assets";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const API_BASE = "https://kasuper-server.onrender.com";
+const API_BASE = "https://kasuper-server-84g2.onrender.com";
 
 const placeholderBookingImg =
   "https://via.placeholder.com/400x250?text=Kasupe+Car";

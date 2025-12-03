@@ -1,8 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./BlogDetails.css";
-
-const API_BASE = "https://kasuper-server.onrender.com";
+import { API_BASE, apiFetch } from "../utils/api";
 
 // helper: support both Mongo _id and local demo id
 const getId = (post) => post._id || post.id;
@@ -46,7 +45,7 @@ function BlogDetails() {
 
         // 1) Fetch the main post
         if (isMounted) setLoading(true);
-        const res = await fetch(`${API_BASE}/api/blogs/${id}`);
+        const res = await apiFetch(`/api/blogs/${id}`);
         if (!res.ok) {
           if (res.status === 404) {
             throw new Error("Blog post not found.");
@@ -59,7 +58,7 @@ function BlogDetails() {
         setPost(postData);
 
         // 2) Fetch all posts to build "recommended" slider
-        const resAll = await fetch(`${API_BASE}/api/blogs`);
+        const resAll = await apiFetch("/api/blogs");
         if (resAll.ok) {
           const all = await resAll.json();
           if (!isMounted) return;
@@ -68,9 +67,7 @@ function BlogDetails() {
             (p) => getId(p) !== getId(postData)
           );
 
-          // ✅ NO SLICE – use ALL other posts in the slider
           setRelatedPosts(others);
-          // reset slider index when list changes
           setRelatedIndex(0);
         } else {
           if (isMounted) setRelatedPosts([]);

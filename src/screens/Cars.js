@@ -1,10 +1,8 @@
-// src/screens/Cars.js
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../components/FeaturedVehicles.css";
 import { assets } from "../assets/assets";
-
-const API_BASE = "https://kasuper-server.onrender.com";
+import { API_BASE, apiFetch } from "../utils/api"; // ✅ NEW
 
 const placeholderImg =
   "https://via.placeholder.com/400x250?text=Kasupe+Car";
@@ -12,10 +10,12 @@ const placeholderImg =
 const getCarImageUrl = (car) => {
   if (!car || !car.image) return placeholderImg;
 
+  // For new Cloudinary-stored images, this will already be a full https URL
   if (typeof car.image === "string" && car.image.startsWith("http")) {
     return car.image;
   }
 
+  // Fallback for any legacy relative paths (will hit your server)
   return `${API_BASE}${car.image}`;
 };
 
@@ -40,7 +40,7 @@ function Cars() {
           setError("");
         }
 
-        const res = await fetch(`${API_BASE}/api/cars`);
+        const res = await apiFetch("/api/cars"); // ✅ uses shared API_BASE
         if (!res.ok) {
           throw new Error("Failed to load cars.");
         }
@@ -65,7 +65,7 @@ function Cars() {
     // initial load
     fetchCars();
 
-    // 🔁 refresh every 30s
+    // 🔁 refresh every 30s (optional – you can remove if too heavy)
     const intervalId = setInterval(fetchCars, 30000);
 
     return () => {
