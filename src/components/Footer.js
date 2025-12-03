@@ -102,7 +102,7 @@ function Footer() {
           <div className="footer-col footer-brand">
             <div className="footer-logo-row">
               <img src={logo} alt="Kasupe logo" className="footer-logo-img" />
-              <span className="footer-logo-text">Kasupe Car Hire</span>
+              <span className="footer-logo-text">Kasupe Car Rental</span>
             </div>
             <p className="footer-description">
               Premium car rental service with a wide selection of luxury and
@@ -196,7 +196,7 @@ function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <span>© 2025 Kasupe Car Hire. All rights reserved.</span>
+          <span>© 2025 Kasupe Car Rental. All rights reserved.</span>
 
           <div className="footer-bottom-links">
             <span>Privacy</span>
